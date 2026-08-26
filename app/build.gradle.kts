@@ -236,6 +236,9 @@ dependencies {
     implementation(libs.rxbinding.appcompat)
     implementation(libs.facebook.fresco)
     implementation(libs.facebook.fresco.middleware)
+    implementation(libs.media3.exoplayer)
+    implementation(libs.media3.datasource.okhttp)
+    implementation(libs.media3.ui)
     implementation(libs.apache.commons.lang3)
 
     // UI

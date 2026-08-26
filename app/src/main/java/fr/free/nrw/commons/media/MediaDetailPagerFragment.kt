@@ -20,6 +20,7 @@ import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
+import androidx.viewpager.widget.ViewPager
 import androidx.viewpager.widget.ViewPager.OnPageChangeListener
 import com.google.android.material.snackbar.Snackbar
 import fr.free.nrw.commons.CommonsApplication
@@ -54,7 +55,9 @@ import java.net.URL
 import java.util.concurrent.Callable
 import javax.inject.Inject
 import androidx.core.net.toUri
+import androidx.media3.common.util.UnstableApi
 
+@UnstableApi
 class MediaDetailPagerFragment : CommonsDaggerSupportFragment(), OnPageChangeListener,
     MediaDetailFragment.Callback {
     @JvmField
@@ -78,6 +81,8 @@ class MediaDetailPagerFragment : CommonsDaggerSupportFragment(), OnPageChangeLis
     var mediaDetailProvider: MediaDetailProvider? = null
     var isFromFeaturedRootFragment: Boolean = false
     var position: Int = 0
+    private var pageBeforeScroll: Int? = null
+    private var mediaFragmentBeforeScroll: MediaDetailFragment? = null
 
     /**
      * ProgressBar used to indicate the loading status of media items.
@@ -147,7 +152,7 @@ class MediaDetailPagerFragment : CommonsDaggerSupportFragment(), OnPageChangeLis
             (activity as MainActivity).showTabs()
         }
 
-        // Temporarily disable it. Ref:https://github.com/commons-app/apps-android-commons/issues/6581#issuecomment-3694210567 
+        // Temporarily disable it. Ref:https://github.com/commons-app/apps-android-commons/issues/6581#issuecomment-3694210567
         // binding = null
     }
 
@@ -203,7 +208,7 @@ class MediaDetailPagerFragment : CommonsDaggerSupportFragment(), OnPageChangeLis
                 val shareIntent = Intent(Intent.ACTION_SEND)
                 shareIntent.setType("text/plain")
                 shareIntent.putExtra(
-                    Intent.EXTRA_TEXT, """${m!!.displayTitle} 
+                    Intent.EXTRA_TEXT, """${m!!.displayTitle}
 ${m.pageTitle.canonicalUri}"""
                 )
                 startActivity(Intent.createChooser(shareIntent, "Share image via..."))
@@ -592,6 +597,31 @@ ${m.pageTitle.canonicalUri}"""
     }
 
     override fun onPageScrollStateChanged(i: Int) {
+        when (i) {
+            ViewPager.SCROLL_STATE_DRAGGING -> {
+                // Dragging can start again mid-settle, when the current page is
+                // already the one being scrolled to.
+                if (mediaFragmentBeforeScroll == null) {
+                    pageBeforeScroll = binding!!.mediaDetailsPager.currentItem
+                    mediaFragmentBeforeScroll = adapter?.currentMediaDetailFragment
+                }
+            }
+
+            ViewPager.SCROLL_STATE_IDLE -> {
+                if (pageBeforeScroll != binding!!.mediaDetailsPager.currentItem) {
+                    mediaFragmentBeforeScroll?.pauseMedia()
+                }
+                pageBeforeScroll = null
+                mediaFragmentBeforeScroll = null
+            }
+        }
+    }
+
+    /**
+     * Enables or disables swiping between media detail pages.
+     */
+    fun setPagerSwipeEnabled(enabled: Boolean) {
+        binding!!.mediaDetailsPager.setPagerSwipeEnabled(enabled)
     }
 
     fun onDataSetChanged() {
