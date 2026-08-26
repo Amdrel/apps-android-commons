@@ -24,6 +24,7 @@ import androidx.viewpager.widget.ViewPager.OnPageChangeListener
 import com.google.android.material.snackbar.Snackbar
 import fr.free.nrw.commons.CommonsApplication
 import fr.free.nrw.commons.Media
+import fr.free.nrw.commons.MediaType
 import fr.free.nrw.commons.R
 import fr.free.nrw.commons.auth.SessionManager
 import fr.free.nrw.commons.bookmarks.models.Bookmark
@@ -424,20 +425,24 @@ ${m.pageTitle.canonicalUri}"""
                         .setVisible(true)
                     menu.findItem(R.id.menu_bookmark_current_image).setEnabled(true)
                         .setVisible(true)
-                    menu.findItem(R.id.menu_set_as_wallpaper).setEnabled(true).setVisible(true)
+                    val isImage = m.mediaType == MediaType.IMAGE
+                    menu.findItem(R.id.menu_set_as_wallpaper).setEnabled(isImage)
+                        .setVisible(isImage)
                     if (m.user != null) {
                         menu.findItem(R.id.menu_view_user_page).setEnabled(true).setVisible(true)
                     }
 
-                    try {
-                        val mediaUrl = URL(m.imageUrl)
-                        handleBackgroundColorMenuItems({
-                            BitmapFactory.decodeStream(
-                                mediaUrl.openConnection().getInputStream()
-                            )
-                        }, menu)
-                    } catch (e: Exception) {
-                        Timber.e("Cant detect media transparency")
+                    if (isImage) {
+                        try {
+                            val mediaUrl = URL(m.imageUrl)
+                            handleBackgroundColorMenuItems({
+                                BitmapFactory.decodeStream(
+                                    mediaUrl.openConnection().getInputStream()
+                                )
+                            }, menu)
+                        } catch (e: Exception) {
+                            Timber.e("Cant detect media transparency")
+                        }
                     }
 
                     // Initialize bookmark object
@@ -483,7 +488,7 @@ ${m.pageTitle.canonicalUri}"""
                         .setVisible(false)
                 }
 
-                if (!sessionManager!!.isUserLoggedIn) {
+                if (m?.mediaType != MediaType.IMAGE || !sessionManager!!.isUserLoggedIn) {
                     menu.findItem(R.id.menu_set_as_avatar).setVisible(false)
                 }
             }

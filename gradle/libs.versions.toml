@@ -103,6 +103,7 @@ androidx-room-compiler = { module = "androidx.room:room-compiler", version.ref =
 androidx-room-rxjava = { module = "androidx.room:room-rxjava2", version.ref = "room" }
 androidx-room-ktx = { module = "androidx.room:room-ktx", version.ref = "room" }
 androidx-room-runtime = { module = "androidx.room:room-runtime", version.ref = "room" }
+androidx-room-testing = { module = "androidx.room:room-testing", version.ref = "room" }
 
 # AndroidX Preferences
 androidx-preference = { module = "androidx.preference:preference", version.ref = "preference" }
