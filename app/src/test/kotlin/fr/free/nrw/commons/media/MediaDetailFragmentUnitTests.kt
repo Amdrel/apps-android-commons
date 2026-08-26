@@ -960,10 +960,9 @@ class MediaDetailFragmentUnitTests {
         val method: Method =
             MediaDetailFragment::class.java.getDeclaredMethod(
                 "handleMediaUnavailable",
-                Throwable::class.java,
             )
         method.isAccessible = true
-        method.invoke(fragment, null)
+        method.invoke(fragment)
 
         val resumed: MediaDerivative? = Whitebox.getInternalState(fragment, "resumeMediaDerivative")
         Assert.assertEquals(TRANSCODE_SRC_240, resumed?.src())

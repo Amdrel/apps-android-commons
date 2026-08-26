@@ -876,14 +876,13 @@ class MediaDetailFragment : CommonsDaggerSupportFragment(), CategoryEditHelper.C
                 .doFinally { mediaRequestInProgress = false }
                 .subscribe(
                     { (playbackSources, timedTextTracks) ->
-                        logMediaPlaybackSources(playbackSources)
                         mediaPlaybackSources = playbackSources
                         mediaTimedTextTracks = timedTextTracks
                         updateSubtitleButtonVisibility()
                         preferredMediaPlaybackSource(playbackSources)?.let(::playMedia)
                             ?: handleMediaUnavailable()
                     },
-                    { error -> handleMediaUnavailable(error) },
+                    { handleMediaUnavailable() },
                 ),
         )
     }
@@ -902,22 +901,6 @@ class MediaDetailFragment : CommonsDaggerSupportFragment(), CategoryEditHelper.C
         }
             ?: playbackSources.firstOrNull { it.transcodeKey().isNullOrBlank().not() }
             ?: playbackSources.firstOrNull()
-
-    private fun logMediaPlaybackSources(playbackSources: List<MediaDerivative>) {
-        Timber.d("Media playback sources: %d", playbackSources.size)
-        playbackSources.forEachIndexed { index, playbackSource ->
-            Timber.d(
-                "Media source %d: %dx%d, %d bps, type=%s, transcode key=%s, URL=%s",
-                index,
-                playbackSource.width(),
-                playbackSource.height(),
-                playbackSource.bandwidth(),
-                playbackSource.type(),
-                playbackSource.transcodeKey(),
-                playbackSource.src(),
-            )
-        }
-    }
 
     /**
      * Returns supported playback sources with transcodes before originals.
@@ -958,7 +941,6 @@ class MediaDetailFragment : CommonsDaggerSupportFragment(), CategoryEditHelper.C
     }
 
     private fun playMedia(playbackSource: MediaDerivative) {
-        Timber.d("Playing media source: %s", playbackSource.src())
         val previousPlaybackSource = selectedMediaDerivative
         val playbackPosition = mediaPlayer?.currentPosition ?: resumePosition
         selectedMediaDerivative = playbackSource
@@ -986,12 +968,8 @@ class MediaDetailFragment : CommonsDaggerSupportFragment(), CategoryEditHelper.C
                 mediaPlayer = it
                 it.addListener(
                     object : Player.Listener {
-                        override fun onPlaybackStateChanged(playbackState: Int) {
-                            Timber.d("Media playback state: %d", playbackState)
-                        }
-
                         override fun onPlayerError(error: PlaybackException) {
-                            handleMediaUnavailable(error)
+                            handleMediaUnavailable()
                         }
                     },
                 )
@@ -1004,7 +982,6 @@ class MediaDetailFragment : CommonsDaggerSupportFragment(), CategoryEditHelper.C
                     .createMediaSource(mediaMediaItem(url)),
             )
             player.prepare()
-            Timber.d("Prepared media source")
             player.seekTo(playbackPosition)
         }
 
@@ -1013,7 +990,6 @@ class MediaDetailFragment : CommonsDaggerSupportFragment(), CategoryEditHelper.C
         playerView.player = player
         showMediaPlayer()
         player.play()
-        Timber.d("Requested media playback")
     }
 
     private fun configureMediaPlayerView(playerView: PlayerView) {
@@ -1108,9 +1084,7 @@ class MediaDetailFragment : CommonsDaggerSupportFragment(), CategoryEditHelper.C
             playbackSource.transcodeKey()?.substringBefore('.') ?: getString(R.string.original)
         }
 
-    private fun handleMediaUnavailable(error: Throwable? = null) {
-        error?.let(Timber::e)
-
+    private fun handleMediaUnavailable() {
         if (selectedMediaDerivative != null) {
             resumeMediaDerivative = selectedMediaDerivative
             resumePosition = mediaPlayer?.currentPosition ?: 0
