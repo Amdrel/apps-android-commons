@@ -1,0 +1,30 @@
+package fr.free.nrw.commons.media
+
+import android.content.Context
+import android.util.AttributeSet
+import android.view.MotionEvent
+import androidx.viewpager.widget.ViewPager
+
+class MediaDetailViewPager : ViewPager {
+    private var pagerSwipeEnabled: Boolean = true
+
+    constructor(context: Context, attrs: AttributeSet?) : super(context, attrs)
+
+    fun setPagerSwipeEnabled(enabled: Boolean) {
+        pagerSwipeEnabled = enabled
+    }
+
+    override fun onTouchEvent(event: MotionEvent): Boolean {
+        if (!pagerSwipeEnabled) {
+            return false
+        }
+        return super.onTouchEvent(event)
+    }
+
+    override fun onInterceptTouchEvent(event: MotionEvent): Boolean {
+        if (!pagerSwipeEnabled) {
+            return false
+        }
+        return super.onInterceptTouchEvent(event)
+    }
+}
