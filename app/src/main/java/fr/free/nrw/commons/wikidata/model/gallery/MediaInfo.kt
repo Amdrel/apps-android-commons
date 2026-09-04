@@ -7,7 +7,13 @@ class MediaInfo {
     private val derivatives: List<MediaDerivative>? = null
     private val timedtext: List<TimedTextTrack>? = null
 
+    /**
+     * Returns the available playback sources, or an empty list when none are provided.
+     */
     fun derivatives(): List<MediaDerivative> = derivatives.orEmpty()
 
+    /**
+     * Returns the available timed text tracks, or an empty list when none are provided.
+     */
     fun timedTextTracks(): List<TimedTextTrack> = timedtext.orEmpty()
 }

@@ -38,5 +38,8 @@ class MediaDerivative {
             else -> MediaType.OTHER
         }
 
+    /**
+     * Returns the MIME type without parameters such as codec information.
+     */
     private fun mediaMimeType(): String = type().substringBefore(';').trim()
 }
